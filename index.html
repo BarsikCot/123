@@ -1,0 +1,3411 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<meta name="description" content="SKINDEX — поиск игроков Minecraft: скины, плащи, 3D-модель профиля. Мини-приложение Telegram в стиле TON UI." />
+<title>SKINDEX — скины Minecraft</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* ============================================================
+   1. TON UI — дизайн-система (без изменений, файл ton-ui.css)
+   ============================================================ */
+/* ============================================================
+   TON UI — дизайн-система в стиле TON DNS (ton.domains)
+   Версия 1.0 · один файл, без зависимостей
+   Тема: <html data-theme="light"> | <html data-theme="dark">
+   ============================================================ */
+
+/* ---------- 1. ТОКЕНЫ ---------- */
+:root {
+  /* Бренд */
+  --ton-blue: #0098ea;
+  --ton-blue-hover: #0086d1;
+  --ton-blue-active: #0071b3;
+  --ton-blue-soft: rgba(0, 152, 234, 0.1);
+  --ton-blue-ring: rgba(0, 152, 234, 0.18);
+
+  /* Семантика */
+  --ton-green: #2dc98b;
+  --ton-green-soft: rgba(45, 201, 139, 0.12);
+  --ton-red: #f0426b;
+  --ton-red-soft: rgba(240, 66, 107, 0.1);
+  --ton-orange: #f5a623;
+  --ton-orange-soft: rgba(245, 166, 35, 0.14);
+
+  /* Поверхности (светлая тема) */
+  --ton-bg: #ffffff;
+  --ton-surface: #f4f6f8;
+  --ton-surface-2: #eceff3;
+  --ton-surface-3: #e2e7ec;
+  --ton-border: #e4e8ec;
+  --ton-border-strong: #d3dae1;
+
+  /* Текст */
+  --ton-text: #16181a;
+  --ton-text-2: #6b7a88;
+  --ton-text-3: #9aa7b2;
+  --ton-text-inv: #ffffff;
+
+  /* Тени */
+  --ton-shadow-xs: 0 1px 2px rgba(16, 24, 32, 0.06);
+  --ton-shadow-sm: 0 2px 8px rgba(16, 24, 32, 0.06);
+  --ton-shadow-md: 0 8px 24px rgba(16, 24, 32, 0.08);
+  --ton-shadow-lg: 0 20px 48px rgba(16, 24, 32, 0.12);
+
+  /* Радиусы */
+  --ton-r-sm: 8px;
+  --ton-r-md: 12px;
+  --ton-r-lg: 16px;
+  --ton-r-xl: 20px;
+  --ton-r-2xl: 28px;
+  --ton-r-full: 999px;
+
+  /* Ритм */
+  --ton-space-1: 4px;
+  --ton-space-2: 8px;
+  --ton-space-3: 12px;
+  --ton-space-4: 16px;
+  --ton-space-5: 24px;
+  --ton-space-6: 32px;
+  --ton-space-7: 48px;
+  --ton-space-8: 64px;
+
+  /* Типографика */
+  --ton-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --ton-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* Высота контролов */
+  --ton-control-sm: 36px;
+  --ton-control-md: 44px;
+  --ton-control-lg: 52px;
+  --ton-control-xl: 60px;
+
+  --ton-transition: 160ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --ton-blue-soft: rgba(0, 152, 234, 0.16);
+  --ton-blue-ring: rgba(0, 152, 234, 0.28);
+  --ton-green-soft: rgba(45, 201, 139, 0.16);
+  --ton-red-soft: rgba(240, 66, 107, 0.16);
+  --ton-orange-soft: rgba(245, 166, 35, 0.18);
+
+  --ton-bg: #16181a;
+  --ton-surface: #1f2326;
+  --ton-surface-2: #272c31;
+  --ton-surface-3: #31373d;
+  --ton-border: #2c3238;
+  --ton-border-strong: #3c444c;
+
+  --ton-text: #ffffff;
+  --ton-text-2: #9aa7b2;
+  --ton-text-3: #6b7a88;
+  --ton-text-inv: #16181a;
+
+  --ton-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ton-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --ton-shadow-md: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --ton-shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- 2. БАЗА ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--ton-font);
+  background: var(--ton-bg);
+  color: var(--ton-text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv11", "ss01";
+  transition: background var(--ton-transition), color var(--ton-transition);
+}
+
+/* ---------- 3. ТИПОГРАФИКА ---------- */
+.ton-h1,
+.ton-h2,
+.ton-h3,
+.ton-h4 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ton-text);
+}
+.ton-h1 {
+  font-size: clamp(34px, 5.2vw, 56px);
+  letter-spacing: -0.03em;
+}
+.ton-h2 {
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.ton-h3 {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+.ton-h4 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ton-lead {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ton-text);
+  margin: 0;
+}
+.ton-body {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ton-text);
+  margin: 0;
+}
+.ton-text-2 {
+  color: var(--ton-text-2);
+}
+.ton-caption {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ton-text-2);
+  margin: 0;
+}
+.ton-micro {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ton-text-3);
+  margin: 0;
+}
+.ton-mono {
+  font-family: var(--ton-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ton-link {
+  color: var(--ton-blue);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--ton-transition);
+}
+.ton-link:hover {
+  color: var(--ton-blue-hover);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---------- 4. ЛОГОТИП ---------- */
+.ton-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ton-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+.ton-logo__mark {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-blue);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.ton-logo__mark svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ---------- 5. КНОПКИ ---------- */
+.ton-btn {
+  --_h: var(--ton-control-md);
+  appearance: none;
+  border: 1px solid transparent;
+  background: var(--ton-surface);
+  color: var(--ton-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  height: var(--_h);
+  padding: 0 20px;
+  border-radius: var(--ton-r-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background var(--ton-transition), color var(--ton-transition),
+    box-shadow var(--ton-transition), transform var(--ton-transition),
+    border-color var(--ton-transition);
+}
+.ton-btn svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.ton-btn:active {
+  transform: scale(0.975);
+}
+.ton-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ton-blue-ring);
+}
+
+.ton-btn--primary {
+  background: var(--ton-blue);
+  color: #fff;
+}
+.ton-btn--primary:hover {
+  background: var(--ton-blue-hover);
+}
+.ton-btn--primary:active {
+  background: var(--ton-blue-active);
+  box-shadow: none;
+}
+
+.ton-btn--secondary {
+  background: var(--ton-surface);
+  color: var(--ton-text);
+  border-color: transparent;
+}
+.ton-btn--secondary:hover {
+  background: var(--ton-surface-2);
+}
+
+.ton-btn--outline {
+  background: transparent;
+  border-color: var(--ton-border-strong);
+  color: var(--ton-text);
+}
+.ton-btn--outline:hover {
+  background: var(--ton-surface);
+}
+
+.ton-btn--ghost {
+  background: transparent;
+  color: var(--ton-text-2);
+}
+.ton-btn--ghost:hover {
+  background: var(--ton-surface);
+  color: var(--ton-text);
+}
+
+.ton-btn--danger {
+  background: var(--ton-red-soft);
+  color: var(--ton-red);
+}
+.ton-btn--danger:hover {
+  background: var(--ton-red);
+  color: #fff;
+}
+
+.ton-btn--sm {
+  --_h: var(--ton-control-sm);
+  font-size: 14px;
+  padding: 0 14px;
+  gap: 6px;
+}
+.ton-btn--sm svg {
+  width: 16px;
+  height: 16px;
+}
+.ton-btn--lg {
+  --_h: var(--ton-control-lg);
+  font-size: 16px;
+  padding: 0 28px;
+}
+.ton-btn--xl {
+  --_h: var(--ton-control-xl);
+  font-size: 17px;
+  font-weight: 700;
+  padding: 0 32px;
+}
+.ton-btn--block {
+  width: 100%;
+}
+.ton-btn--icon {
+  width: var(--_h);
+  padding: 0;
+}
+
+.ton-btn[disabled],
+.ton-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+  box-shadow: none;
+}
+.ton-btn--loading {
+  pointer-events: none;
+  color: transparent !important;
+  position: relative;
+}
+.ton-btn--loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: ton-spin 0.7s linear infinite;
+}
+.ton-btn--secondary.ton-btn--loading::after,
+.ton-btn--outline.ton-btn--loading::after,
+.ton-btn--ghost.ton-btn--loading::after,
+.ton-btn--danger.ton-btn--loading::after {
+  border-color: var(--ton-blue-soft);
+  border-top-color: var(--ton-blue);
+}
+
+@keyframes ton-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 6. ПОЛЯ ВВОДА ---------- */
+.ton-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ton-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ton-text-2);
+  padding-left: 4px;
+}
+.ton-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ton-input {
+  width: 100%;
+  height: var(--ton-control-lg);
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--ton-text);
+  background: var(--ton-surface);
+  border: 1.5px solid transparent;
+  border-radius: var(--ton-r-full);
+  padding: 0 20px;
+  outline: none;
+  transition: border-color var(--ton-transition), background var(--ton-transition),
+    box-shadow var(--ton-transition);
+}
+.ton-input::placeholder {
+  color: var(--ton-text-3);
+}
+.ton-input:hover {
+  background: var(--ton-surface-2);
+}
+.ton-input:focus {
+  background: var(--ton-bg);
+  border-color: var(--ton-blue);
+  box-shadow: 0 0 0 4px var(--ton-blue-ring);
+}
+.ton-input-wrap--icon .ton-input {
+  padding-left: 48px;
+}
+.ton-input-wrap__icon {
+  position: absolute;
+  left: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--ton-text-3);
+  pointer-events: none;
+}
+.ton-input-wrap__icon svg {
+  width: 18px;
+  height: 18px;
+}
+.ton-input-wrap__suffix {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ton-input-wrap--suffix .ton-input {
+  padding-right: 110px;
+}
+.ton-input--lg {
+  height: var(--ton-control-xl);
+  font-size: 17px;
+}
+.ton-input--error {
+  border-color: var(--ton-red);
+  box-shadow: 0 0 0 4px var(--ton-red-soft);
+}
+.ton-hint {
+  font-size: 13px;
+  color: var(--ton-text-3);
+  padding-left: 4px;
+}
+.ton-hint--error {
+  color: var(--ton-red);
+}
+.ton-hint--ok {
+  color: var(--ton-green);
+}
+
+/* Суффикс .ton внутри поля */
+.ton-suffix {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-bg);
+  color: var(--ton-text-2);
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: var(--ton-shadow-xs);
+}
+
+/* ---------- 7. БЕЙДЖИ, ЧИПЫ, ПИЛЮЛИ ---------- */
+.ton-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: var(--ton-r-full);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--ton-surface-2);
+  color: var(--ton-text-2);
+  white-space: nowrap;
+}
+.ton-badge--success {
+  background: var(--ton-green-soft);
+  color: #1a9e6d;
+}
+[data-theme="dark"] .ton-badge--success {
+  color: #4ad9a3;
+}
+.ton-badge--blue {
+  background: var(--ton-blue-soft);
+  color: var(--ton-blue);
+}
+.ton-badge--danger {
+  background: var(--ton-red-soft);
+  color: var(--ton-red);
+}
+.ton-badge--warn {
+  background: var(--ton-orange-soft);
+  color: #b9791a;
+}
+[data-theme="dark"] .ton-badge--warn {
+  color: var(--ton-orange);
+}
+.ton-badge--dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ton-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--ton-r-full);
+  border: 1.5px solid var(--ton-border);
+  background: transparent;
+  color: var(--ton-text-2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--ton-transition);
+}
+.ton-chip:hover {
+  border-color: var(--ton-border-strong);
+  color: var(--ton-text);
+}
+.ton-chip--active {
+  background: var(--ton-blue-soft);
+  border-color: transparent;
+  color: var(--ton-blue);
+}
+
+/* ---------- 8. КАРТОЧКИ ---------- */
+.ton-card {
+  background: var(--ton-surface);
+  border-radius: var(--ton-r-xl);
+  padding: 24px;
+  border: 1px solid transparent;
+}
+.ton-card--outline {
+  background: var(--ton-bg);
+  border-color: var(--ton-border);
+}
+.ton-card--elevated {
+  background: var(--ton-bg);
+  box-shadow: var(--ton-shadow-md);
+}
+.ton-card__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ton-card__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ton-text);
+  margin: 0;
+}
+.ton-card__divider {
+  height: 1px;
+  background: var(--ton-border-strong);
+  opacity: 0.7;
+  margin: 20px 0;
+  border: 0;
+}
+.ton-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ton-text);
+}
+.ton-amount__icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ton-blue);
+}
+.ton-amount-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+/* ---------- 9. ТАЙМЕР ---------- */
+.ton-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ton-timer__unit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border-radius: var(--ton-r-md);
+  background: var(--ton-surface);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ton-text-2);
+}
+.ton-timer__value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ton-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.ton-timer__sep {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ton-text-3);
+  padding: 0 2px;
+}
+
+/* ---------- 10. МОДАЛЬНОЕ ОКНО ---------- */
+.ton-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 32, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ton-transition);
+}
+.ton-overlay--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ton-modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--ton-bg);
+  border-radius: var(--ton-r-2xl);
+  padding: 28px;
+  box-shadow: var(--ton-shadow-lg);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 220ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+.ton-overlay--open .ton-modal {
+  transform: none;
+}
+.ton-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.ton-modal__title {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.ton-wallet-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--ton-r-lg);
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ton-text);
+  cursor: pointer;
+  transition: background var(--ton-transition);
+  text-align: left;
+}
+.ton-wallet-option:hover {
+  background: var(--ton-surface);
+}
+.ton-wallet-option img,
+.ton-wallet-option .ton-wallet-ico {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ton-r-md);
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  background: var(--ton-surface-2);
+}
+
+/* ---------- 11. ТОСТЫ ---------- */
+.ton-toasts {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 200;
+}
+.ton-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 260px;
+  max-width: 360px;
+  padding: 14px 18px;
+  border-radius: var(--ton-r-lg);
+  background: var(--ton-text);
+  color: var(--ton-bg);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--ton-shadow-lg);
+  animation: ton-toast-in 260ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+.ton-toast--success .ton-toast__dot {
+  background: var(--ton-green);
+}
+.ton-toast--error .ton-toast__dot {
+  background: var(--ton-red);
+}
+.ton-toast__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ton-blue);
+  flex: 0 0 auto;
+}
+@keyframes ton-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+/* ---------- 12. ПЕРЕКЛЮЧАТЕЛИ, ЧЕКБОКСЫ, ТАБЫ ---------- */
+.ton-switch {
+  position: relative;
+  width: 46px;
+  height: 28px;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-surface-3);
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--ton-transition);
+  flex: 0 0 auto;
+}
+.ton-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--ton-shadow-sm);
+  transition: transform var(--ton-transition);
+}
+.ton-switch[aria-checked="true"] {
+  background: var(--ton-blue);
+}
+.ton-switch[aria-checked="true"]::after {
+  transform: translateX(18px);
+}
+
+.ton-check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--ton-text);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.ton-check input {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid var(--ton-border-strong);
+  background: var(--ton-surface);
+  margin: 0;
+  flex: 0 0 auto;
+  cursor: pointer;
+  transition: all var(--ton-transition);
+  position: relative;
+}
+.ton-check input:checked {
+  background: var(--ton-blue);
+  border-color: var(--ton-blue);
+}
+.ton-check input:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: no-repeat center / 14px
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+}
+
+.ton-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--ton-surface);
+  border-radius: var(--ton-r-full);
+}
+.ton-tab {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ton-text-2);
+  height: 36px;
+  padding: 0 18px;
+  border-radius: var(--ton-r-full);
+  cursor: pointer;
+  transition: all var(--ton-transition);
+}
+.ton-tab:hover {
+  color: var(--ton-text);
+}
+.ton-tab[aria-selected="true"] {
+  background: var(--ton-bg);
+  color: var(--ton-text);
+  box-shadow: var(--ton-shadow-xs);
+}
+
+/* ---------- 13. АДРЕС / КОПИРОВАНИЕ ---------- */
+.ton-addr {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 6px 0 14px;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-surface);
+  font-family: var(--ton-mono);
+  font-size: 13.5px;
+  color: var(--ton-text-2);
+}
+.ton-copy {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ton-bg);
+  color: var(--ton-text-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all var(--ton-transition);
+}
+.ton-copy:hover {
+  color: var(--ton-blue);
+  background: var(--ton-blue-soft);
+}
+.ton-copy svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- 14. СПИСКИ / ТАБЛИЦА ---------- */
+.ton-list {
+  border-radius: var(--ton-r-xl);
+  background: var(--ton-surface);
+  overflow: hidden;
+}
+.ton-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  font-size: 15px;
+  transition: background var(--ton-transition);
+}
+.ton-list__row + .ton-list__row {
+  border-top: 1px solid var(--ton-border);
+}
+.ton-list__row:hover {
+  background: var(--ton-surface-2);
+}
+
+.ton-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.ton-table th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ton-text-3);
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+.ton-table td {
+  padding: 16px;
+  border-top: 1px solid var(--ton-border);
+}
+.ton-table tr:hover td {
+  background: var(--ton-surface);
+}
+
+/* ---------- 15. СКЕЛЕТОНЫ ---------- */
+.ton-skeleton {
+  border-radius: var(--ton-r-md);
+  background: linear-gradient(
+    90deg,
+    var(--ton-surface) 25%,
+    var(--ton-surface-2) 37%,
+    var(--ton-surface) 63%
+  );
+  background-size: 400% 100%;
+  animation: ton-shimmer 1.3s ease infinite;
+}
+@keyframes ton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ---------- 16. РАЗДЕЛИТЕЛЬ / КОНТЕЙНЕР ---------- */
+.ton-container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.ton-container--narrow {
+  max-width: 560px;
+}
+.ton-hr {
+  height: 1px;
+  border: 0;
+  background: var(--ton-border);
+  margin: 0;
+}
+
+/* ---------- 17. ШАПКА ---------- */
+.ton-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--ton-bg) 85%, transparent);
+  border-bottom: 1px solid var(--ton-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.ton-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 72px;
+}
+.ton-header__spacer {
+  flex: 1;
+}
+
+/* ---------- 18. УТИЛИТЫ ---------- */
+.ton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ton-row--wrap {
+  flex-wrap: wrap;
+}
+.ton-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ton-center {
+  text-align: center;
+}
+.ton-mt-2 {
+  margin-top: 8px;
+}
+.ton-mt-4 {
+  margin-top: 16px;
+}
+.ton-mt-5 {
+  margin-top: 24px;
+}
+.ton-hidden {
+  display: none !important;
+}
+
+/* ---------- 19. АНИМАЦИИ ---------- */
+.ton-fade-up {
+  animation: ton-fade-up 420ms cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+@keyframes ton-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   2. SKINDEX — сетки и компоненты приложения
+   ============================================================ */
+/* ============================================================
+   SKINDEX — надстройка над TON UI.
+   Дизайн-система не меняется: только сетки, карточки скинов,
+   зона 3D-вьюера и мелкие анимации (opacity / transform).
+   ============================================================ */
+
+/* ---------- базовая сцена ---------- */
+.sk-app {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+.sk-main {
+  flex: 1;
+  padding-bottom: 48px;
+}
+
+/* мягкая подложка-«свет» за hero: тот же синий, но 6% прозрачности */
+.sk-glow {
+  position: absolute;
+  top: -220px;
+  left: 50%;
+  width: 900px;
+  height: 520px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--ton-blue-soft), transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.sk-main > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- шапка ---------- */
+.ton-header__inner {
+  min-width: 0;
+}
+.ton-header .ton-logo {
+  flex: 0 0 auto;
+}
+.sk-header__logo svg {
+  width: 20px;
+  height: 20px;
+}
+.sk-header__search {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 460px;
+  transition: opacity var(--ton-transition), transform var(--ton-transition);
+}
+.sk-header__search .ton-input {
+  height: var(--ton-control-md);
+  font-size: 15px;
+}
+.sk-header__search .ton-input-wrap__icon {
+  left: 16px;
+}
+.sk-header__search .ton-input-wrap--icon .ton-input {
+  padding-left: 44px;
+  padding-right: 88px;
+}
+.sk-search-btn {
+  position: absolute;
+  right: 5px;
+  height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-blue);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--ton-transition), transform var(--ton-transition);
+}
+.sk-search-btn:hover {
+  background: var(--ton-blue-hover);
+}
+.sk-search-btn:active {
+  transform: scale(0.975);
+}
+.sk-header__theme svg {
+  width: 20px;
+  height: 20px;
+}
+.sk-header__theme,
+#btn-random {
+  flex: 0 0 auto;
+}
+
+/* ---------- шаги «как это работает» ---------- */
+.sk-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ---------- hero ---------- */
+.sk-hero {
+  padding: 56px 0 8px;
+  text-align: center;
+}
+.sk-hero__badge {
+  margin-bottom: 20px;
+}
+.sk-hero__search {
+  max-width: 620px;
+  margin: 28px auto 0;
+}
+.sk-hero__search .ton-input-wrap--icon .ton-input {
+  padding-left: 54px;
+  padding-right: 128px;
+}
+.sk-hero__search .ton-input-wrap__icon {
+  left: 22px;
+}
+.sk-hero__search .ton-input-wrap__icon svg {
+  width: 20px;
+  height: 20px;
+}
+.sk-hero__suffix {
+  right: 7px;
+}
+.sk-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-blue);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--ton-transition), transform var(--ton-transition);
+}
+.sk-go:hover {
+  background: var(--ton-blue-hover);
+}
+.sk-go:active {
+  transform: scale(0.975);
+}
+.sk-go svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* живые подсказки под поиском */
+.sk-suggest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  min-height: 40px;
+}
+.sk-suggest__label {
+  font-size: 13px;
+  color: var(--ton-text-3);
+  margin-right: 2px;
+}
+
+/* ---------- секции ---------- */
+.sk-section {
+  padding-top: 48px;
+}
+.sk-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.sk-section__title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sk-section__count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ton-text-3);
+  font-variant-numeric: tabular-nums;
+}
+.sk-section__sub {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--ton-text-2);
+}
+
+/* ---------- карточки скинов (топ) ---------- */
+.sk-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+.sk-skin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 10px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--ton-r-xl);
+  background: var(--ton-surface);
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  color: inherit;
+  overflow: hidden;
+  transition: background var(--ton-transition), border-color var(--ton-transition),
+    transform 220ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+.sk-skin:hover {
+  background: var(--ton-surface-2);
+  transform: translateY(-3px);
+}
+.sk-skin:active {
+  transform: scale(0.985);
+}
+.sk-skin:focus-visible {
+  outline: none;
+  border-color: var(--ton-blue);
+  box-shadow: 0 0 0 4px var(--ton-blue-ring);
+}
+.sk-skin__rank {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: var(--ton-r-full);
+  background: var(--ton-bg);
+  color: var(--ton-text-2);
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+.sk-skin--top .sk-skin__rank {
+  background: var(--ton-blue);
+  color: #fff;
+}
+.sk-skin__body {
+  width: 84px;
+  height: 124px;
+  object-fit: contain;
+  object-position: bottom;
+  image-rendering: -webkit-optimize-contrast;
+  transition: transform 260ms cubic-bezier(0.2, 0, 0.2, 1);
+  filter: drop-shadow(0 6px 10px rgba(16, 24, 32, 0.1));
+}
+.sk-skin:hover .sk-skin__body {
+  transform: translateY(-2px) scale(1.04);
+}
+.sk-skin__name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sk-skin__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ton-text-3);
+  font-variant-numeric: tabular-nums;
+}
+.sk-skin__cape {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--ton-surface-3);
+}
+.sk-skin__ph {
+  width: 84px;
+  height: 124px;
+  border-radius: var(--ton-r-md);
+}
+
+/* скелетоны карточек при первой загрузке */
+.sk-skin--skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+.sk-skin--skeleton .sk-skin__body {
+  opacity: 0;
+}
+.sk-skel-line {
+  height: 12px;
+  border-radius: 999px;
+  width: 70%;
+}
+
+/* ---------- 3D-вьюер ---------- */
+.sk-viewer-wrap {
+  position: relative;
+  border-radius: var(--ton-r-xl);
+  background: var(--ton-surface);
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  touch-action: none;
+}
+.sk-viewer-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+.sk-viewer-wrap canvas:active {
+  cursor: grabbing;
+}
+.sk-viewer__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ton-surface);
+  transition: opacity 260ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+.sk-viewer__loading.ton-hidden {
+  display: grid !important;
+  opacity: 0;
+  pointer-events: none;
+}
+.sk-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--ton-surface-3);
+  border-top-color: var(--ton-blue);
+  animation: sk-spin 700ms linear infinite;
+}
+@keyframes sk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.sk-viewer__tools {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sk-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--ton-r-full);
+  background: color-mix(in srgb, var(--ton-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--ton-text-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--ton-transition), background var(--ton-transition),
+    transform var(--ton-transition);
+}
+.sk-tool:hover {
+  color: var(--ton-text);
+}
+.sk-tool:active {
+  transform: scale(0.975);
+}
+.sk-tool[aria-pressed="true"] {
+  background: var(--ton-blue);
+  color: #fff;
+}
+.sk-tool svg {
+  width: 15px;
+  height: 15px;
+}
+.sk-viewer__hint {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 12px;
+  color: var(--ton-text-3);
+  background: color-mix(in srgb, var(--ton-bg) 85%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.sk-viewer__hint svg {
+  width: 14px;
+  height: 14px;
+}
+.sk-viewer__hint--gone {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 300ms cubic-bezier(0.2, 0, 0.2, 1), transform 300ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/* обрезка текстуры плаща до лицевой стороны */
+.sk-cape-face {
+  width: 104px;
+  height: 136px;
+  border-radius: var(--ton-r-sm);
+  background-repeat: no-repeat;
+  background-size: 582% 188%;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  box-shadow: var(--ton-shadow-xs);
+}
+.sk-viewer__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+}
+.sk-viewer__fallback img {
+  width: 60%;
+  max-width: 220px;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* ---------- профиль ---------- */
+#profile-body {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.sk-profile {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.sk-profile__side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 440px;
+  width: 100%;
+}
+.sk-nick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sk-nick {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  word-break: break-word;
+}
+.sk-copy-nick {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ton-surface);
+  color: var(--ton-text-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: color var(--ton-transition), background var(--ton-transition);
+}
+.sk-copy-nick:hover {
+  color: var(--ton-blue);
+  background: var(--ton-blue-soft);
+}
+.sk-copy-nick svg {
+  width: 16px;
+  height: 16px;
+}
+.sk-profile__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.sk-uuid {
+  margin-top: 14px;
+}
+.sk-uuid .ton-addr {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-flex;
+}
+.sk-uuid__full {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sk-profile__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.sk-kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+  padding: 12px 0;
+}
+.sk-kv + .sk-kv {
+  border-top: 1px solid var(--ton-border);
+}
+.sk-kv__k {
+  color: var(--ton-text-2);
+}
+.sk-kv__v {
+  font-weight: 700;
+  text-align: right;
+  word-break: break-word;
+}
+.sk-kv__v--mono {
+  font-family: var(--ton-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 14px;
+}
+.sk-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.sk-card-head__title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.sk-card-head__title--mono {
+  font-family: var(--ton-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ton-text-3);
+  letter-spacing: 0;
+}
+
+/* плащ превью */
+.sk-cape-preview {
+  height: 132px;
+  border-radius: var(--ton-r-lg);
+  background: var(--ton-surface-2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.sk-cape-preview img {
+  height: 108px;
+  image-rendering: -webkit-optimize-contrast;
+}
+.sk-cape-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--ton-text-3);
+  font-size: 13px;
+}
+.sk-cape-empty svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* кнопки действий профиля */
+.sk-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.sk-actions .ton-btn {
+  padding: 0 12px;
+}
+.sk-actions .ton-btn svg {
+  flex: 0 0 auto;
+}
+
+/* скин 2D (вид спереди и сзади) */
+.sk-flat {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.sk-flat__cell {
+  border-radius: var(--ton-r-lg);
+  background: var(--ton-surface);
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  overflow: hidden;
+  min-height: 170px;
+}
+.sk-flat__cell img {
+  height: 150px;
+  width: auto;
+  image-rendering: -webkit-optimize-contrast;
+}
+.sk-flat__cell span {
+  grid-area: 1 / 1;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ton-text-3);
+  align-self: end;
+  justify-self: center;
+}
+
+/* палитра скина */
+.sk-palette {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.sk-palette i {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--ton-surface-2);
+  border: 1px solid var(--ton-border);
+}
+
+/* ---------- история / недавние ---------- */
+.sk-recent {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sk-recent__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px 0 6px;
+  border-radius: var(--ton-r-full);
+  border: 1.5px solid var(--ton-border);
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ton-text-2);
+  cursor: pointer;
+  transition: border-color var(--ton-transition), color var(--ton-transition),
+    background var(--ton-transition), transform var(--ton-transition);
+}
+.sk-recent__item:hover {
+  border-color: var(--ton-border-strong);
+  color: var(--ton-text);
+}
+.sk-recent__item:active {
+  transform: scale(0.975);
+}
+.sk-recent__item img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  image-rendering: pixelated;
+  background: var(--ton-surface-2);
+}
+
+/* результат поиска в шапке (дропдаун) */
+.sk-dd {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--ton-bg);
+  border-radius: var(--ton-r-lg);
+  box-shadow: var(--ton-shadow-md);
+  padding: 6px;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity var(--ton-transition), transform var(--ton-transition);
+}
+.sk-dd--open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.sk-dd__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--ton-r-md);
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ton-text);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--ton-transition);
+}
+.sk-dd__row:hover {
+  background: var(--ton-surface);
+}
+.sk-dd__row img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  image-rendering: pixelated;
+  background: var(--ton-surface-2);
+}
+.sk-dd__row span {
+  color: var(--ton-text-3);
+  font-weight: 500;
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* ---------- загрузка профиля (скелетон) ---------- */
+.sk-profile-skeleton {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 24px;
+}
+.sk-skel-viewer {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--ton-r-xl);
+}
+.sk-skel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sk-skel-title {
+  height: 40px;
+  width: 45%;
+  border-radius: 999px;
+}
+.sk-skel-text {
+  height: 16px;
+  width: 70%;
+  border-radius: 999px;
+}
+.sk-skel-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+.sk-skel-card {
+  height: 150px;
+  border-radius: var(--ton-r-xl);
+}
+
+/* пустое состояние / ошибка */
+.sk-empty {
+  text-align: center;
+  padding: 64px 24px;
+}
+.sk-empty__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--ton-surface);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 20px;
+  color: var(--ton-text-3);
+}
+.sk-empty__icon svg {
+  width: 28px;
+  height: 28px;
+}
+.sk-empty__title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.sk-empty__text {
+  font-size: 15px;
+  color: var(--ton-text-2);
+  margin: 0 auto;
+  max-width: 380px;
+}
+.sk-empty__actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+/* ---------- футер ---------- */
+.sk-footer {
+  border-top: 1px solid var(--ton-border);
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--ton-text-3);
+}
+.sk-footer a {
+  color: var(--ton-text-2);
+  text-decoration: none;
+  font-weight: 600;
+}
+.sk-footer a:hover {
+  color: var(--ton-blue);
+}
+.sk-footer__links {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+/* счётчик, «табло» */
+.sk-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.sk-stat {
+  background: var(--ton-surface);
+  border-radius: var(--ton-r-lg);
+  padding: 14px 16px;
+}
+.sk-stat__v {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.sk-stat__k {
+  font-size: 12px;
+  color: var(--ton-text-3);
+  margin-top: 2px;
+}
+
+/* ---------- анимации появления (только opacity/transform) ---------- */
+.sk-in {
+  animation: sk-in 380ms cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+@keyframes sk-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.sk-stagger > * {
+  animation: sk-in 400ms cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+.sk-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.sk-stagger > *:nth-child(2) { animation-delay: 24ms; }
+.sk-stagger > *:nth-child(3) { animation-delay: 48ms; }
+.sk-stagger > *:nth-child(4) { animation-delay: 72ms; }
+.sk-stagger > *:nth-child(5) { animation-delay: 96ms; }
+.sk-stagger > *:nth-child(6) { animation-delay: 120ms; }
+.sk-stagger > *:nth-child(7) { animation-delay: 132ms; }
+.sk-stagger > *:nth-child(8) { animation-delay: 150ms; }
+.sk-stagger > *:nth-child(9) { animation-delay: 168ms; }
+.sk-stagger > *:nth-child(10) { animation-delay: 186ms; }
+.sk-stagger > *:nth-child(11) { animation-delay: 204ms; }
+.sk-stagger > *:nth-child(12) { animation-delay: 222ms; }
+.sk-stagger > *:nth-child(n + 13) { animation-delay: 240ms; }
+
+/* вид «на весь экран» для 3D */
+.sk-viewer-wrap--full {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  border-radius: 0;
+  aspect-ratio: auto;
+  background: var(--ton-bg);
+}
+.sk-viewer-wrap--full .sk-viewer__tools {
+  bottom: 20px;
+  justify-content: center;
+}
+.sk-viewer-wrap--full .sk-viewer__close {
+  display: inline-flex;
+}
+
+/* ---------- адаптив ---------- */
+@media (max-width: 900px) {
+  #btn-random {
+    display: none;
+  }
+  .sk-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1024px) {
+  .sk-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .sk-profile,
+  .sk-profile-skeleton {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+}
+@media (max-width: 860px) {
+  .sk-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .sk-profile,
+  .sk-profile-skeleton {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sk-profile__side {
+    max-width: 420px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .sk-header__search {
+    max-width: none;
+  }
+  .sk-hero {
+    padding-top: 40px;
+  }
+  .sk-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .sk-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .sk-skin {
+    padding: 12px 8px 12px;
+  }
+  .sk-skin__body {
+    width: 66px;
+    height: 96px;
+  }
+  .sk-skin__name {
+    font-size: 13px;
+  }
+  .sk-header__inner {
+    height: 64px;
+    gap: 10px;
+  }
+  .sk-header__search .ton-input {
+    height: 40px;
+    font-size: 14px;
+    padding-right: 82px;
+  }
+  .sk-search-btn {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .sk-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sk-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sk-nick {
+    font-size: 26px;
+  }
+  .sk-profile__cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sk-hero__search .ton-input-wrap--icon .ton-input {
+    padding-left: 48px;
+    padding-right: 108px;
+  }
+  .sk-hero__search .ton-input-wrap__icon {
+    left: 16px;
+  }
+  .sk-go {
+    padding: 0 16px;
+    font-size: 14px;
+  }
+  .sk-skel-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ton-toasts {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+  .ton-toast {
+    min-width: 0;
+    max-width: none;
+  }
+}
+@media (max-width: 430px) {
+  .ton-header .ton-logo > span:last-child {
+    display: none;
+  }
+}
+@media (max-width: 400px) {
+  .sk-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="sk-app">
+  <div class="sk-glow"></div>
+
+  <!-- ================= ШАПКА ================= -->
+  <header class="ton-header">
+    <div class="ton-container ton-header__inner">
+      <button class="ton-btn ton-btn--ghost ton-btn--icon ton-btn--sm ton-hidden" id="btn-back" aria-label="Назад" title="Назад">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+
+      <a class="ton-logo" href="#" id="logo-link" aria-label="SKINDEX — на главную">
+        <span class="ton-logo__mark sk-header__logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/>
+            <circle cx="12" cy="9.5" r="2"/>
+            <path d="M7.5 17c.8-2.2 2.5-3.3 4.5-3.3s3.7 1.1 4.5 3.3"/>
+          </svg>
+        </span>
+        <span>skindex</span>
+      </a>
+
+      <div class="sk-header__spacer"></div>
+
+      <div class="sk-header__search" id="header-search">
+        <div class="ton-input-wrap ton-input-wrap--icon">
+          <span class="ton-input-wrap__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            </svg>
+          </span>
+          <input class="ton-input" id="header-input" type="text" placeholder="Ник игрока" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Поиск игрока" />
+          <span class="ton-input-wrap__suffix">
+            <button class="sk-search-btn" id="header-go" type="button">Найти</button>
+          </span>
+        </div>
+        <div class="sk-dd" id="search-dd" role="listbox" aria-label="Результаты поиска"></div>
+      </div>
+
+      <button class="ton-btn ton-btn--ghost ton-btn--icon ton-btn--sm sk-header__theme" id="btn-theme" aria-label="Сменить тему" title="Сменить тему">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+      </button>
+
+      <button class="ton-btn ton-btn--primary ton-btn--sm" id="btn-random">Случайный скин</button>
+    </div>
+  </header>
+
+  <main class="sk-main">
+    <!-- ================= ГЛАВНАЯ ================= -->
+    <div id="view-home">
+      <section class="ton-container sk-hero">
+        <span class="ton-badge ton-badge--blue ton-badge--dot sk-hero__badge sk-in">Скины и плащи Minecraft</span>
+        <h1 class="ton-h1 sk-in">Найдите игрока<br />по нику</h1>
+        <p class="ton-lead ton-text-2 sk-in" style="max-width:480px;margin:16px auto 0">
+          Скин, плащ, модель и UUID — в одном профиле. Модель можно крутить.
+        </p>
+
+        <div class="ton-input-wrap ton-input-wrap--icon sk-hero__search sk-in">
+          <span class="ton-input-wrap__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            </svg>
+          </span>
+          <input class="ton-input ton-input--lg" id="hero-input" type="text" placeholder="Введите ник игрока" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Ник игрока" />
+          <span class="ton-input-wrap__suffix sk-hero__suffix">
+            <button class="sk-go" id="hero-go" type="button">
+              Найти
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h13"/><path d="m12 5 7 7-7 7"/>
+              </svg>
+            </button>
+          </span>
+        </div>
+
+        <div class="sk-suggest" id="suggest"></div>
+      </section>
+
+      <!-- ТОП СКИНОВ -->
+      <section class="ton-container sk-section">
+        <div class="sk-section__head">
+          <div>
+            <div class="sk-section__title">
+              <h2 class="ton-h2">Топ скинов</h2>
+              <span class="sk-section__count" id="top-count">18 скинов</span>
+            </div>
+            <p class="sk-section__sub">Легендарные скины сообщества — нажмите, чтобы открыть профиль</p>
+          </div>
+          <div class="ton-tabs" role="tablist" aria-label="Сортировка">
+            <button class="ton-tab" role="tab" aria-selected="true" data-sort="top">Топ</button>
+            <button class="ton-tab" role="tab" aria-selected="false" data-sort="cape">С плащом</button>
+            <button class="ton-tab" role="tab" aria-selected="false" data-sort="slim">Slim</button>
+          </div>
+        </div>
+        <div class="sk-grid sk-stagger" id="top-grid"></div>
+      </section>
+
+      <!-- как это работает -->
+      <section class="ton-container sk-section">
+        <div class="sk-section__head">
+          <div class="sk-section__title"><h2 class="ton-h3">Как это работает</h2></div>
+        </div>
+        <div class="sk-steps">
+          <div class="ton-card">
+            <div class="sk-card-head"><span class="sk-card-head__title">1. Введите ник</span></div>
+            <p class="ton-caption" style="margin:0">Ищем профиль в базе Mojang. Ник — от 3 до 16 символов.</p>
+          </div>
+          <div class="ton-card">
+            <div class="sk-card-head"><span class="sk-card-head__title">2. Смотрите профиль</span></div>
+            <p class="ton-caption" style="margin:0">Скин, плащ, модель, UUID и палитра цветов текстуры.</p>
+          </div>
+          <div class="ton-card">
+            <div class="sk-card-head"><span class="sk-card-head__title">3. Крутите 3D</span></div>
+            <p class="ton-caption" style="margin:0">Модель вращается пальцем или мышью. Включите ходьбу — она пойдёт.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= ПРОФИЛЬ ================= -->
+    <div id="view-profile" class="ton-container ton-hidden" style="padding-top:32px">
+      <div class="sk-nick-row" style="margin-bottom:20px">
+        <button class="ton-btn ton-btn--ghost ton-btn--sm" id="btn-back-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          Все скины
+        </button>
+        <button class="ton-btn ton-btn--ghost ton-btn--sm" id="btn-theme-mobile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+          </svg>
+          Тема
+        </button>
+      </div>
+      <div id="profile-body"></div>
+    </div>
+  </main>
+
+  <!-- ================= ФУТЕР ================= -->
+  <footer class="ton-container sk-footer">
+    <span>SKINDEX · мини-приложение Telegram в стиле TON UI</span>
+    <div class="sk-footer__links">
+      <a href="https://namemc.com" target="_blank" rel="noopener">NameMC</a>
+      <a href="https://laby.net" target="_blank" rel="noopener">laby.net</a>
+      <a href="https://minecraft.net" target="_blank" rel="noopener">Minecraft</a>
+    </div>
+  </footer>
+</div>
+
+<div class="ton-toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   SKINDEX — логика приложения
+   ============================================================ */
+/* ============================================================
+   SKINDEX — мини-приложение Telegram в стиле TON UI
+   Поиск игроков Minecraft, топ скинов, профиль с 3D-моделью.
+   Без зависимостей, кроме skinview3d (CDN) и Telegram WebApp SDK.
+   ============================================================ */
+(function () {
+  "use strict";
+
+  /* ---------------- Константы ---------------- */
+  var API_TIMEOUT = 12000;
+  var CACHE_TTL = 10 * 60 * 1000;
+  var LS_RECENT = "skindex:recent";
+  var SKINVIEW_CDNS = [
+    "https://cdn.jsdelivr.net/npm/skinview3d@3.4.2/bundles/skinview3d.bundle.js",
+    "https://unpkg.com/skinview3d@3.4.2/bundles/skinview3d.bundle.js"
+  ];
+
+  /* Топ скинов: ники проверены через Mojang, модель и плащ — из их профилей */
+  var TOPSKINS = [
+    { name: "Technoblade", model: "classic", cape: true },
+    { name: "Dream", model: "slim", cape: false },
+    { name: "jeb_", model: "classic", cape: true },
+    { name: "Notch", model: "classic", cape: false },
+    { name: "Dinnerbone", model: "classic", cape: true },
+    { name: "Grumm", model: "classic", cape: true },
+    { name: "Hypixel", model: "classic", cape: true },
+    { name: "CaptainSparklez", model: "classic", cape: true },
+    { name: "GeorgeNotFound", model: "classic", cape: true },
+    { name: "Sapnap", model: "slim", cape: true },
+    { name: "DanTDM", model: "classic", cape: true },
+    { name: "deadmau5", model: "classic", cape: false },
+    { name: "TommyInnit", model: "classic", cape: false },
+    { name: "Skeppy", model: "classic", cape: false },
+    { name: "BadBoyHalo", model: "classic", cape: true },
+    { name: "Ranboo", model: "classic", cape: true },
+    { name: "WilburSoot", model: "classic", cape: false },
+    { name: "Mumbo", model: "classic", cape: false }
+  ];
+
+  var SUGGEST = ["Technoblade", "Dream", "jeb_", "Notch", "Dinnerbone", "Hypixel"];
+
+  /* ---------------- Утилиты ---------------- */
+  function $(sel, root) {
+    return (root || document).querySelector(sel);
+  }
+  function $$(sel, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function classNames(o) {
+    return Object.keys(o).filter(function (k) { return o[k]; }).join(" ");
+  }
+  function isNick(s) {
+    return /^[A-Za-z0-9_]{3,16}$/.test(s);
+  }
+  function paramSafe(s) {
+    return String(s).replace(/[^A-Za-z0-9_]/g, "");
+  }
+
+  /* data-URI заглушка, чтобы вёрстка не «прыгала» при 404 картинки */
+  function placeholder(letter, w, h) {
+    var l = esc((letter || "?").charAt(0).toUpperCase());
+    var svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + (w || 64) + '" height="' + (h || 64) + '">' +
+      '<rect width="100%" height="100%" fill="#eceff3"/>' +
+      '<text x="50%" y="50%" dy=".35em" text-anchor="middle" fill="#9aa7b2" ' +
+      'font-family="Inter,Arial,sans-serif" font-weight="800" font-size="' + Math.round(Math.min(w, h) * 0.42) + '">' + l + "</text>" +
+      "</svg>";
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+
+  function fetchJSON(url) {
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, API_TIMEOUT);
+    return fetch(url, {
+      signal: ctrl ? ctrl.signal : undefined,
+      headers: { Accept: "application/json" },
+      mode: "cors",
+      cache: "no-store"
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          var err = new Error("HTTP " + r.status);
+          err.status = r.status;
+          throw err;
+        }
+        return r.json();
+      })
+      .finally(function () { clearTimeout(timer); });
+  }
+
+  function b64json(v) {
+    try {
+      var bin = atob(v.replace(/-/g, "+").replace(/_/g, "/"));
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var text = new TextDecoder("utf-8").decode(bytes);
+      return JSON.parse(text);
+    } catch (e) {
+      try { return JSON.parse(atob(v)); } catch (e2) { return null; }
+    }
+  }
+
+  function https(u) {
+    return u ? String(u).replace(/^http:\/\//, "https://") : u;
+  }
+
+  /* ---------------- Telegram WebApp ---------------- */
+  var TG = null;
+  var tgReady = false;
+
+  function tg() {
+    return window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  }
+
+  function haptic(kind) {
+    try {
+      var t = tg();
+      if (!t || !t.HapticFeedback) return;
+      if (kind === "ok") t.HapticFeedback.notificationOccurred("success");
+      else if (kind === "err") t.HapticFeedback.notificationOccurred("error");
+      else t.HapticFeedback.impactOccurred("light");
+    } catch (e) {}
+  }
+
+  function applyTheme(dark) {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    var bg = getComputedStyle(document.documentElement).getPropertyValue("--ton-bg").trim();
+    try {
+      var t = tg();
+      if (t && t.setHeaderColor) t.setHeaderColor(bg);
+      if (t && t.setBackgroundColor) t.setBackgroundColor(bg);
+    } catch (e) {}
+    syncViewerTheme();
+  }
+
+  function initTelegram() {
+    var t = tg();
+    if (!t) {
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(prefersDark);
+      return;
+    }
+    TG = t;
+    tgReady = true;
+    try {
+      t.ready();
+      t.expand();
+    } catch (e) {}
+    if (t.disableVerticalSwipes) { try { t.disableVerticalSwipes(); } catch (e) {} }
+    applyTheme(t.colorScheme === "dark");
+    try {
+      t.onEvent("themeChanged", function () { applyTheme(t.colorScheme === "dark"); });
+      t.onEvent("viewportChanged", setViewportVars);
+    } catch (e) {}
+    setViewportVars();
+  }
+
+  function setViewportVars() {
+    var t = tg();
+    if (!t) return;
+    var h = t.viewportStableHeight || t.viewportHeight;
+    if (h) document.documentElement.style.setProperty("--sk-vh", h + "px");
+  }
+
+  /* ---------------- Уведомления ---------------- */
+  function toast(text, kind) {
+    var box = $("#toasts");
+    if (!box) return;
+    var el = document.createElement("div");
+    el.className = "ton-toast" + (kind ? " ton-toast--" + kind : "");
+    el.innerHTML = '<span class="ton-toast__dot"></span><span>' + esc(text) + "</span>";
+    box.appendChild(el);
+    setTimeout(function () {
+      el.style.transition = "opacity 200ms, transform 200ms";
+      el.style.opacity = "0";
+      el.style.transform = "translateY(8px)";
+      setTimeout(function () { el.remove(); }, 220);
+    }, 2600);
+  }
+
+  /* ---------------- Ссылки на изображения ---------------- */
+  function avatarUrl(id, size) {
+    if (!id) return placeholder("?");
+    return "https://crafthead.net/avatar/" + id + "/" + (size || 128);
+  }
+  function bodyUrl(id, size) {
+    if (!id) return placeholder("?");
+    return "https://mc-heads.net/body/" + id + "/" + (size || 140);
+  }
+  function bodyUrlFallback(id, scale) {
+    return "https://crafatar.com/renders/body/" + id + "?scale=" + (scale || 5) + "&overlay";
+  }
+
+  /* вешаем безопасную замену битой картинки */
+  function guardImg(img, seed, fallbackSrc, w, h) {
+    var stage = 0;
+    img.addEventListener("error", function () {
+      if (stage === 0 && fallbackSrc) {
+        stage = 1;
+        img.src = fallbackSrc;
+        return;
+      }
+      if (stage < 2) {
+        stage = 2;
+        img.src = placeholder(seed, w, h);
+      }
+    });
+  }
+
+  /* ---------------- Топ скинов ---------------- */
+  var topFilter = "top";
+
+  function topList() {
+    if (topFilter === "cape") return TOPSKINS.filter(function (p) { return p.cape; });
+    if (topFilter === "slim") return TOPSKINS.filter(function (p) { return p.model === "slim"; });
+    return TOPSKINS;
+  }
+
+  function renderTop() {
+    var grid = $("#top-grid");
+    if (!grid) return;
+    var list = topList();
+    var html = list.map(function (p, i) {
+      var rank = i + 1;
+      var isTop = rank <= 3;
+      return (
+        '<button class="sk-skin ' + (isTop ? "sk-skin--top" : "") + '" data-name="' + esc(p.name) + '" aria-label="Открыть профиль ' + esc(p.name) + '">' +
+        '<span class="sk-skin__rank">' + rank + "</span>" +
+        '<img class="sk-skin__body" alt="" loading="lazy" data-seed="' + esc(p.name) + '" src="' + bodyUrl(p.name, 140) + '">' +
+        '<span class="sk-skin__name">' + esc(p.name) + "</span>" +
+        '<span class="sk-skin__meta">' +
+        (p.cape ? capeIcon() : "") +
+        "<span>" + (p.model === "slim" ? "Slim" : "Classic") + "</span>" +
+        "</span>" +
+        "</button>"
+      );
+    }).join("");
+    grid.innerHTML = html;
+    grid.classList.remove("sk-stagger");
+    void grid.offsetWidth;
+    $$(".sk-skin", grid).forEach(function (btn) {
+      var img = $("img", btn);
+      if (img) guardImg(img, btn.dataset.name, null, 84, 124);
+      btn.addEventListener("click", function () {
+        haptic("light");
+        go("u/" + btn.dataset.name);
+      });
+    });
+    grid.classList.add("sk-stagger");
+    var count = $("#top-count");
+    if (count) {
+      var n = list.length;
+      var word = n % 10 === 1 && n % 100 !== 11 ? "скин" : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? "скина" : "скинов");
+      count.textContent = n + " " + word;
+    }
+  }
+
+  function capeIcon() {
+    return (
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:0 0 auto">' +
+      '<path d="M5 4h14v11l-3 5H8l-3-5z"/><path d="M9 4v11"/><path d="M15 4v11"/></svg>'
+    );
+  }
+
+  /* ---------------- Недавние / подсказки ---------------- */
+  function getRecent() {
+    try {
+      var raw = localStorage.getItem(LS_RECENT);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr.slice(0, 6) : [];
+    } catch (e) { return []; }
+  }
+  function pushRecent(name) {
+    try {
+      var arr = getRecent().filter(function (n) { return n.toLowerCase() !== name.toLowerCase(); });
+      arr.unshift(name);
+      localStorage.setItem(LS_RECENT, JSON.stringify(arr.slice(0, 6)));
+    } catch (e) {}
+  }
+
+  function renderSuggest() {
+    var box = $("#suggest");
+    if (!box) return;
+    var recent = getRecent();
+    var list = recent.length ? recent : SUGGEST;
+    box.innerHTML =
+      '<span class="sk-suggest__label">' + (recent.length ? "Недавние:" : "Попробуйте:") + "</span>" +
+      list.map(function (n) {
+        return '<button class="ton-chip" data-name="' + esc(n) + '">' + esc(n) + "</button>";
+      }).join("");
+    $$("button", box).forEach(function (b) {
+      b.addEventListener("click", function () {
+        haptic("light");
+        go("u/" + b.dataset.name);
+      });
+    });
+  }
+
+  /* ---------------- Роутер ---------------- */
+  function go(path) {
+    if (("#/" + path) === location.hash) {
+      onRoute();
+    } else {
+      location.hash = "#/" + path;
+    }
+  }
+
+  function onRoute() {
+    var hash = location.hash.replace(/^#\/?/, "");
+    var m = hash.match(/^u\/([^\/?#]+)/i);
+    if (m) {
+      var name = paramSafe(decodeURIComponent(m[1]));
+      if (name) {
+        renderProfile(name);
+        return;
+      }
+    }
+    renderHome();
+  }
+
+  var currentView = "";
+
+  function setView(view) {
+    currentView = view;
+    $("#view-home").classList.toggle("ton-hidden", view !== "home");
+    $("#view-profile").classList.toggle("ton-hidden", view !== "profile");
+    var back = $("#btn-back");
+    if (back) back.classList.toggle("ton-hidden", view !== "profile");
+    try {
+      var t = tg();
+      if (t && t.BackButton) {
+        if (view === "profile") t.BackButton.show();
+        else t.BackButton.hide();
+      }
+    } catch (e) {}
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  function renderHome() {
+    setView("home");
+    renderSuggest();
+    var input = $("#hero-input");
+    if (input && document.activeElement !== input) input.value = "";
+    document.title = "SKINDEX — скины Minecraft";
+    var hdrInput = $("#header-input");
+    if (hdrInput) hdrInput.value = "";
+    fitHeaderPlaceholder();
+  }
+
+  /* на узких экранах шапка узкая — укорачиваем плейсхолдер, чтобы не обрезался */
+  function fitHeaderPlaceholder() {
+    var el = $("#header-input");
+    if (!el) return;
+    el.placeholder = window.innerWidth < 560 ? "Ник" : "Ник игрока";
+  }
+
+  /* ---------------- Загрузка профиля ---------------- */
+  var memCache = {};
+
+  function cacheGet(key) {
+    var c = memCache[key];
+    if (c && Date.now() - c.t < CACHE_TTL) return c.v;
+    try {
+      var raw = localStorage.getItem("skindex:p:" + key);
+      if (raw) {
+        var o = JSON.parse(raw);
+        if (o && Date.now() - o.t < CACHE_TTL) {
+          memCache[key] = o;
+          return o.v;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+  function cacheSet(key, v) {
+    var o = { t: Date.now(), v: v };
+    memCache[key] = o;
+    try { localStorage.setItem("skindex:p:" + key, JSON.stringify(o)); } catch (e) {}
+  }
+
+  function normalizeProfile(raw, fallbackName) {
+    var out = {
+      name: raw.name || fallbackName,
+      id: raw.id || null,
+      skin: null,
+      cape: null,
+      model: "classic",
+      source: raw.source || ""
+    };
+    var props = raw.properties || [];
+    for (var i = 0; i < props.length; i++) {
+      if (props[i] && props[i].name === "textures") {
+        var d = b64json(props[i].value);
+        if (d && d.textures) {
+          if (d.textures.SKIN && d.textures.SKIN.url) {
+            out.skin = https(d.textures.SKIN.url);
+            var md = d.textures.SKIN.metadata;
+            if (md && md.model === "slim") out.model = "slim";
+          }
+          if (d.textures.CAPE && d.textures.CAPE.url) out.cape = https(d.textures.CAPE.url);
+        }
+        break;
+      }
+    }
+    if (!out.skin && raw.skin_texture) out.skin = https(raw.skin_texture);
+    return out;
+  }
+
+  /* Основной резолвер: crafthead → playerdb. Ошибки помечаем кодом:
+     notfound — игрока нет в базе, network — сервисы не ответили. */
+  function notFound(name) {
+    var e = new Error("player not found");
+    e.code = "notfound";
+    return e;
+  }
+
+  function resolvePlayer(name) {
+    var key = name.toLowerCase();
+    var cached = cacheGet(key);
+    if (cached) return Promise.resolve(cached);
+
+    function fromCrafthead() {
+      return fetchJSON("https://crafthead.net/profile/" + encodeURIComponent(name)).then(function (d) {
+        if (!d || !d.id) throw notFound(name);
+        var p = normalizeProfile({ name: d.name, id: d.id, properties: d.properties, source: "crafthead" }, name);
+        if (!p.skin) throw notFound(name);
+        return p;
+      });
+    }
+
+    function fromPlayerdb() {
+      return fetchJSON("https://playerdb.co/api/player/minecraft/" + encodeURIComponent(name)).then(function (d) {
+        var pl = d && d.data && d.data.player;
+        if (!pl) throw notFound(name);
+        var p = normalizeProfile(
+          { name: pl.username, id: pl.raw_id, properties: pl.properties, skin_texture: pl.skin_texture, source: "playerdb" },
+          name
+        );
+        if (!p.skin) throw notFound(name);
+        return p;
+      });
+    }
+
+    return fromCrafthead()
+      .catch(function (err) {
+        /* crafthead не знает ника (404) — сразу пробуем playerdb; при сетевой
+           ошибке тоже пробуем второй источник */
+        return fromPlayerdb().catch(function (err2) {
+          /* если хотя бы один сервис явно ответил «нет такого игрока» (4xx) —
+             ника не существует; если оба молчали/упали по сети — это сеть */
+          function isClientErr(e) { return !!e && e.status >= 400 && e.status < 500; }
+          if (isClientErr(err) || isClientErr(err2)) throw notFound(name);
+          var e = new Error("network");
+          e.code = "network";
+          throw e;
+        });
+      })
+      .then(function (p) {
+        cacheSet(key, p);
+        return p;
+      });
+  }
+
+  /* ---------------- Профиль: разметка ---------------- */
+  function profileSkeleton(name) {
+    return (
+      '<div class="sk-in">' +
+      '<div class="sk-profile-skeleton">' +
+      '<div class="sk-skel-stack"><div class="ton-skeleton sk-skel-viewer"></div></div>' +
+      '<div class="sk-skel-stack">' +
+      '<div class="ton-skeleton sk-skel-title"></div>' +
+      '<div class="ton-skeleton sk-skel-text" style="width:38%"></div>' +
+      '<div class="ton-skeleton sk-skel-text" style="width:56%"></div>' +
+      '<div class="sk-skel-cards"><div class="ton-skeleton sk-skel-card"></div><div class="ton-skeleton sk-skel-card"></div></div>' +
+      "</div></div></div>"
+    );
+  }
+
+  function renderProfile(name) {
+    setView("profile");
+    document.title = name + " — SKINDEX";
+    var host = $("#profile-body");
+    host.innerHTML = profileSkeleton(name);
+
+    resolvePlayer(name)
+      .then(function (p) {
+        if (!p.id) {
+          showProfileError(name, "notfound");
+          return;
+        }
+        pushRecent(p.name);
+        renderProfileView(p);
+      })
+      .catch(function (err) {
+        showProfileError(name, err && err.code === "notfound" ? "notfound" : "network");
+      });
+  }
+
+  function showProfileError(name, kind) {
+    var host = $("#profile-body");
+    var notFound = kind === "notfound";
+    host.innerHTML =
+      '<div class="sk-empty sk-in">' +
+      '<div class="sk-empty__icon">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      (notFound
+        ? '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'
+        : '<path d="M12 8v5"/><circle cx="12" cy="16.5" r=".6" fill="currentColor"/><circle cx="12" cy="12" r="9"/>') +
+      "</svg></div>" +
+      '<h2 class="sk-empty__title">' + (notFound ? "Игрок не найден" : "Не удалось загрузить") + "</h2>" +
+      '<p class="sk-empty__text">' +
+      (notFound
+        ? "Профиля «" + esc(name) + "» нет в базе Mojang. Проверьте ник — он чувствителен к регистру и до 16 символов."
+        : "Сервисы Mojang не ответили. Проверьте соединение и попробуйте ещё раз.") +
+      "</p>" +
+      '<div class="sk-empty__actions">' +
+      (notFound
+        ? '<button class="ton-btn ton-btn--primary" data-retry="1">Попробовать снова</button>'
+        : '<button class="ton-btn ton-btn--primary" data-retry="1">Повторить</button>') +
+      '<button class="ton-btn ton-btn--secondary" data-home="1">На главную</button>' +
+      "</div></div>";
+    bindEmptyActions(name);
+  }
+
+  function bindEmptyActions(name) {
+    $$("[data-retry]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        haptic("light");
+        resolvePlayer(name);
+        renderProfile(name);
+      });
+    });
+    $$("[data-home]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        haptic("light");
+        go("");
+      });
+    });
+  }
+
+  function renderProfileView(p) {
+    var host = $("#profile-body");
+    var uuid = p.id || "";
+    var prettyUuid = uuid ? uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5") : "—";
+    var skinDl = p.skin || "https://mc-heads.net/skin/" + encodeURIComponent(p.name);
+    var capeDl = p.cape || (uuid ? "https://crafatar.com/capes/" + uuid : "");
+
+    host.innerHTML =
+      '<div class="sk-in">' +
+      '<div class="sk-profile">' +
+      /* ---- левая колонка: 3D ---- */
+      '<div class="sk-profile__side">' +
+      '<div class="sk-viewer-wrap" id="viewer-wrap">' +
+      '<canvas id="skin-canvas" aria-label="3D-модель игрока ' + esc(p.name) + '"></canvas>' +
+      '<div class="sk-viewer__loading" id="viewer-loading"><div class="sk-spinner"></div></div>' +
+      '<div class="sk-viewer__hint">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12a5 5 0 1 1 10 0"/><path d="m4 9 3 3 3-3"/></svg>' +
+      "<span>Крутите модель</span></div>" +
+      '<div class="sk-viewer__tools">' +
+      '<button class="sk-tool" id="btn-full" aria-pressed="false" title="На весь экран">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>' +
+      "</button>" +
+      '<button class="sk-tool" id="btn-rotate" aria-pressed="true" title="Автоповорот">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>' +
+      "</button>" +
+      '<button class="sk-tool" id="btn-anim" aria-pressed="false" title="Анимация ходьбы">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a2 2 0 1 0 0-.01"/><path d="m9 21 3-7 2 3 4 1"/><path d="M14 14 11 9l-4 2"/></svg>' +
+      "</button>" +
+      (p.cape
+        ? '<button class="sk-tool" id="btn-cape" aria-pressed="true" title="Показать плащ">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v11l-3 5H8l-3-5z"/><path d="M9 4v11M15 4v11"/></svg>' +
+          "</button>"
+        : "") +
+      "</div>" +
+      "</div>" +
+      "</div>" +
+      /* ---- правая колонка ---- */
+      '<div class="sk-profile__main">' +
+      '<div class="sk-nick-row">' +
+      '<h1 class="sk-nick">' + esc(p.name) + "</h1>" +
+      '<span class="ton-badge ' + (p.cape ? "ton-badge--blue" : "") + '">' + (p.model === "slim" ? "Slim" : "Classic") + "</span>" +
+      '<button class="sk-copy-nick" id="btn-copy-nick" title="Скопировать ник" aria-label="Скопировать ник">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>' +
+      "</button>" +
+      "</div>" +
+      '<div class="sk-profile__meta">' +
+      '<span class="ton-badge ton-badge--success ton-badge--dot">Найден в Mojang</span>' +
+      (p.cape ? '<span class="ton-badge ton-badge--blue ton-badge--dot">Есть плащ</span>' : '<span class="ton-badge">Без плаща</span>') +
+      "</div>" +
+      '<div class="sk-uuid"><span class="ton-addr"><span class="sk-uuid__full">' + esc(prettyUuid) + "</span>" +
+      '<button class="ton-copy" data-copy="' + esc(prettyUuid) + '" title="Скопировать UUID">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>' +
+      "</button></span></div>" +
+
+      '<div class="sk-actions ton-mt-5">' +
+      '<a class="ton-btn ton-btn--primary" href="' + esc(skinDl) + '" target="_blank" rel="noopener">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>' +
+      "Скачать скин</a>" +
+      (p.cape
+        ? '<a class="ton-btn ton-btn--secondary" href="' + esc(capeDl) + '" target="_blank" rel="noopener">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v11l-3 5H8l-3-5z"/><path d="M12 4v11"/></svg>' +
+          "Скачать плащ</a>"
+        : '<a class="ton-btn ton-btn--secondary" href="https://namemc.com/profile/' + esc(p.name) + '" target="_blank" rel="noopener">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>' +
+          "NameMC</a>") +
+      '<button class="ton-btn ton-btn--secondary" id="btn-copy-uuid">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>' +
+      "Копировать UUID</button>" +
+      (p.cape
+        ? '<a class="ton-btn ton-btn--outline" href="https://namemc.com/profile/' + esc(p.name) + '" target="_blank" rel="noopener">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>' +
+          "NameMC</a>"
+        : '<button class="ton-btn ton-btn--outline" id="btn-share">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="M8 8l4-4 4 4"/><path d="M5 14v5h14v-5"/></svg>' +
+          "Поделиться</button>") +
+      "</div>" +
+
+      '<div class="sk-profile__cards ton-mt-5">' +
+      /* об игроке */
+      '<div class="ton-card">' +
+      '<div class="sk-card-head"><span class="sk-card-head__title">Об игроке</span></div>' +
+      row("Ник", esc(p.name)) +
+      row("Модель скина", p.model === "slim" ? "Slim (Alex)" : "Classic (Steve)") +
+      row("Плащ", p.cape ? "Есть" : "Нет") +
+      row("Текстура", "64×64 PNG") +
+      row("Источник", "Mojang API") +
+      "</div>" +
+      /* плащ */
+      '<div class="ton-card">' +
+      '<div class="sk-card-head"><span class="sk-card-head__title">Плащ</span>' +
+      (p.cape ? '<span class="ton-badge ton-badge--blue">Активен</span>' : '<span class="ton-badge">Нет</span>') +
+      "</div>" +
+      (p.cape
+        ? '<div class="sk-cape-preview"><div class="sk-cape-face" role="img" aria-label="Плащ игрока ' + esc(p.name) + '" style="background-image:url(&quot;' + esc(p.cape) + '&quot;)"></div></div>' +
+          '<p class="ton-caption">Плащ отображается на 3D-модели. Крутите модель, чтобы посмотреть сзади.</p>'
+        : '<div class="sk-cape-preview"><div class="sk-cape-empty">' + capeIcon() + "<span>Плащ не установлен</span></div></div>" +
+          '<p class="ton-caption">У игрока нет активного плаща в профиле Mojang.</p>') +
+      "</div>" +
+      /* скин */
+      '<div class="ton-card">' +
+      '<div class="sk-card-head"><span class="sk-card-head__title">Текстура скина</span><span class="sk-card-head__title--mono">' + (p.model === "slim" ? "64×64 · slim" : "64×64") + "</span></div>" +
+      '<div class="sk-cape-preview" style="background:var(--ton-surface-2)"><img id="skin-tex" alt="Текстура скина" src="' + esc(skinDl) + '" style="height:120px;image-rendering:pixelated" data-seed="skin"></div>' +
+      '<div class="sk-palette" id="skin-palette"></div>' +
+      "</div>" +
+      /* вид спереди / сзади */
+      '<div class="ton-card">' +
+      '<div class="sk-card-head"><span class="sk-card-head__title">Вид</span><span class="sk-card-head__title--mono">2D</span></div>' +
+      '<div class="sk-flat">' +
+      '<div class="sk-flat__cell"><img alt="Вид спереди" src="https://mc-heads.net/body/' + esc(uuid || p.name) + '/right" data-seed="' + esc(p.name) + '"><span>спереди</span></div>' +
+      '<div class="sk-flat__cell"><img alt="Вид сзади" src="https://mc-heads.net/body/' + esc(uuid || p.name) + '/left" data-seed="' + esc(p.name) + '"><span>сзади</span></div>' +
+      "</div></div>" +
+      "</div>" + /* /cards */
+      "</div>" + /* /main */
+      "</div></div>";
+
+    /* картинки-заглушки */
+    $$("#profile-body img[data-seed]").forEach(function (img) {
+      guardImg(img, img.dataset.seed, null, 120, 120);
+    });
+
+    bindProfileActions(p, skinDl, capeDl);
+    buildPalette(p.skin, skinDl);
+    initViewer(p);
+    drawViewerChrome(p);
+  }
+
+  function row(k, v, isMono) {
+    return '<div class="sk-kv"><span class="sk-kv__k">' + esc(k) + '</span><span class="sk-kv__v' + (isMono ? " sk-kv__v--mono" : "") + '">' + v + "</span></div>";
+  }
+
+  function bindProfileActions(p, skinDl, capeDl) {
+    function copy(text, label) {
+      var done = function () {
+        haptic("ok");
+        toast(label + " скопирован", "success");
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallback(); });
+      } else fallback();
+      function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) { toast("Не удалось скопировать", "error"); }
+        ta.remove();
+      }
+    }
+
+    var cn = $("#btn-copy-nick");
+    if (cn) cn.addEventListener("click", function () { copy(p.name, "Ник"); });
+
+    $$('[data-copy]').forEach(function (b) {
+      b.addEventListener("click", function () {
+        var v = b.dataset.copy;
+        if (!v || v === "—") return toast("UUID недоступен", "error");
+        copy(v, "UUID");
+      });
+    });
+
+    var cu = $("#btn-copy-uuid");
+    if (cu) cu.addEventListener("click", function () {
+      if (!p.id) return toast("UUID недоступен", "error");
+      copy(p.id.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5"), "UUID");
+    });
+
+    var sh = $("#btn-share");
+    if (sh) sh.addEventListener("click", function () {
+      var url = location.origin + location.pathname + "#/u/" + encodeURIComponent(p.name);
+      var t = tg();
+      if (t && t.openTelegramLink) {
+        t.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent("Скин " + p.name + " в SKINDEX"));
+        return;
+      }
+      if (navigator.share) {
+        navigator.share({ title: p.name, url: url }).catch(function () {});
+        return;
+      }
+      copy(url, "Ссылка");
+    });
+  }
+
+  /* палитра: берём доминирующие цвета из текстуры скина */
+  function buildPalette(skinUrl, fallbackUrl) {
+    var host = $("#skin-palette");
+    if (!host || !skinUrl) return;
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+      try {
+        var c = document.createElement("canvas");
+        c.width = img.width;
+        c.height = img.height;
+        var ctx = c.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+        var data = ctx.getImageData(0, 0, c.width, c.height).data;
+        var map = {};
+        for (var i = 0; i < data.length; i += 4) {
+          var a = data[i + 3];
+          if (a < 200) continue;
+          var r = data[i], g = data[i + 1], b = data[i + 2];
+          var key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+          map[key] = (map[key] || 0) + 1;
+        }
+        var list = Object.keys(map)
+          .sort(function (a, b) { return map[b] - map[a]; })
+          .slice(0, 10)
+          .map(function (k) {
+            var r = ((k >> 8) & 15) * 17, g = ((k >> 4) & 15) * 17, b = (k & 15) * 17;
+            return "rgb(" + r + "," + g + "," + b + ")";
+          });
+        host.innerHTML = list.map(function (col) {
+          return '<i style="background:' + col + '" title="' + col + '"></i>';
+        }).join("");
+      } catch (e) {
+        host.innerHTML = "";
+      }
+    };
+    img.onerror = function () {
+      host.innerHTML = "";
+    };
+    img.src = skinUrl || fallbackUrl;
+  }
+
+  /* ---------------- skinview3d ---------------- */
+  var viewer = null;
+  var svLoading = null;
+  var fullscreen = { on: false, holder: null, reset: function () {} };
+
+  function resizeViewer() {
+    var wrap = $("#viewer-wrap");
+    if (!viewer || !wrap) return;
+    var r = wrap.getBoundingClientRect();
+    if (r.width < 10 || r.height < 10) return;
+    viewer.width = Math.round(r.width);
+    viewer.height = Math.round(r.height);
+  }
+
+  function loadSkinview() {
+    if (window.skinview3d) return Promise.resolve(window.skinview3d);
+    if (svLoading) return svLoading;
+    svLoading = new Promise(function (resolve, reject) {
+      var i = 0;
+      function next() {
+        if (i >= SKINVIEW_CDNS.length) return reject(new Error("cdn"));
+        var s = document.createElement("script");
+        s.src = SKINVIEW_CDNS[i++];
+        s.async = true;
+        s.onload = function () {
+          if (window.skinview3d) resolve(window.skinview3d);
+          else next();
+        };
+        s.onerror = next;
+        document.head.appendChild(s);
+      }
+      next();
+    });
+    return svLoading;
+  }
+
+  function surfaceColor() {
+    var v = getComputedStyle(document.documentElement).getPropertyValue("--ton-surface").trim();
+    return v || "#f4f6f8";
+  }
+
+  function syncViewerTheme() {
+    if (viewer) {
+      try {
+        var col = surfaceColor();
+        viewer.background = col;
+      } catch (e) {}
+    }
+  }
+
+  function disposeViewer() {
+    try { fullscreen.reset(); } catch (e) {}
+    if (viewer) {
+      try { viewer.dispose(); } catch (e) {}
+      viewer = null;
+    }
+  }
+
+  function initViewer(p) {
+    var canvas = $("#skin-canvas");
+    if (!canvas) return;
+    disposeViewer();
+    var wrap = $("#viewer-wrap");
+    var loading = $("#viewer-loading");
+    var skinUrl = p.skin || "https://mc-heads.net/skin/" + encodeURIComponent(p.name);
+
+    loadSkinview()
+      .then(function (sv) {
+        var rect = wrap.getBoundingClientRect();
+        var w = Math.max(240, Math.round(rect.width || 360));
+        var h = Math.max(240, Math.round(rect.height || w));
+        viewer = new sv.SkinViewer({
+          canvas: canvas,
+          width: w,
+          height: h,
+          skin: skinUrl,
+          cape: p.cape || null,
+          model: p.model === "slim" ? "slim" : "auto-detect",
+          animation: new sv.IdleAnimation()
+        });
+        try {
+          viewer.zoom = 0.9;
+          viewer.fov = 42;
+          viewer.background = surfaceColor();
+          viewer.autoRotate = true;
+          viewer.autoRotateSpeed = 0.7;
+          viewer.controls.enablePan = false;
+          viewer.controls.enableRotate = true;
+          viewer.controls.enableZoom = true;
+          viewer.controls.minDistance = 12;
+          viewer.controls.maxDistance = 90;
+        } catch (e) {}
+        if (loading) loading.classList.add("ton-hidden");
+        var hint = $(".sk-viewer__hint");
+        if (hint) setTimeout(function () { hint.classList.add("sk-viewer__hint--gone"); }, 4000);
+      })
+      .catch(function () {
+        /* нет CDN — показываем 2D-рендер, кнопки 3D скрываем */
+        if (loading) loading.classList.add("ton-hidden");
+        var fb = document.createElement("div");
+        fb.className = "sk-viewer__fallback";
+        fb.innerHTML = '<img alt="' + esc(p.name) + '" src="' + bodyUrl(p.id || p.name, 420) + '">';
+        var im = $("img", fb);
+        guardImg(im, p.name, p.id ? bodyUrlFallback(p.id, 8) : null, 300, 400);
+        wrap.appendChild(fb);
+        ["btn-rotate", "btn-anim", "btn-full"].forEach(function (id) {
+          var b = $("#" + id);
+          if (b) b.classList.add("ton-hidden");
+        });
+      });
+  }
+
+  function drawViewerChrome(p) {
+    var btnRotate = $("#btn-rotate");
+    var btnAnim = $("#btn-anim");
+    var btnCape = $("#btn-cape");
+    var btnFull = $("#btn-full");
+    var wrap = $("#viewer-wrap");
+
+    var animOn = false;
+    var capeOn = !!p.cape;
+
+    if (btnRotate) btnRotate.addEventListener("click", function () {
+      if (!viewer) return;
+      viewer.autoRotate = !viewer.autoRotate;
+      btnRotate.setAttribute("aria-pressed", viewer.autoRotate ? "true" : "false");
+      haptic("light");
+    });
+
+    if (btnAnim) btnAnim.addEventListener("click", function () {
+      if (!viewer) return;
+      animOn = !animOn;
+      var sv = window.skinview3d;
+      viewer.animation = animOn ? new sv.WalkingAnimation() : new sv.IdleAnimation();
+      btnAnim.setAttribute("aria-pressed", animOn ? "true" : "false");
+      haptic("light");
+    });
+
+    if (btnCape) btnCape.addEventListener("click", function () {
+      if (!viewer) return;
+      capeOn = !capeOn;
+      try { viewer.loadCape(capeOn ? p.cape : null); } catch (e) {}
+      btnCape.setAttribute("aria-pressed", capeOn ? "true" : "false");
+      haptic("light");
+      toast(capeOn ? "Плащ показан" : "Плащ скрыт");
+    });
+
+    if (btnFull) btnFull.addEventListener("click", function () {
+      toggleFullscreen();
+    });
+
+    function toggleFullscreen(forceOff) {
+      if (!wrap || !wrap.isConnected) return;
+      var on = fullscreen.on;
+      if (forceOff === true && !on) return;
+      if (forceOff !== true && !on) {
+        /* переносим вьюер в body: у родителей есть transform от анимаций,
+           а transform делает position:fixed относительным родителя */
+        fullscreen.holder = document.createElement("div");
+        wrap.parentNode.insertBefore(fullscreen.holder, wrap);
+        document.body.appendChild(wrap);
+        wrap.classList.add("sk-viewer-wrap--full");
+        fullscreen.on = true;
+      } else {
+        if (fullscreen.holder && fullscreen.holder.parentNode) {
+          fullscreen.holder.parentNode.insertBefore(wrap, fullscreen.holder);
+          fullscreen.holder.remove();
+        }
+        fullscreen.holder = null;
+        fullscreen.on = false;
+        wrap.classList.remove("sk-viewer-wrap--full");
+      }
+      if (btnFull) btnFull.setAttribute("aria-pressed", fullscreen.on ? "true" : "false");
+      if (viewer) {
+        try { viewer.zoom = fullscreen.on ? 0.62 : 0.9; } catch (e) {}
+      }
+      document.body.style.overflow = fullscreen.on ? "hidden" : "";
+      haptic("light");
+      setTimeout(resizeViewer, 60);
+    }
+    fullscreen.reset = function () { toggleFullscreen(true); };
+
+    window.addEventListener("resize", resizeViewer);
+  }
+
+  /* ---------------- Поиск ---------------- */
+  function submitSearch(value) {
+    var q = String(value || "").trim().replace(/^@/, "");
+    if (!q) {
+      toast("Введите ник игрока");
+      return;
+    }
+    if (!isNick(q)) {
+      toast("Ник: 3–16 символов, a–z, 0–9, _", "error");
+      haptic("err");
+      return;
+    }
+    haptic("light");
+    closeDropdown();
+    var hero = $("#hero-input");
+    var hdr = $("#header-input");
+    if (hero) hero.blur();
+    if (hdr) hdr.blur();
+    go("u/" + q);
+  }
+
+  function bindSearch() {
+    [$("#hero-input"), $("#header-input")].forEach(function (input) {
+      if (!input) return;
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          submitSearch(input.value);
+        }
+        if (e.key === "Escape") closeDropdown();
+      });
+      input.addEventListener("input", function () {
+        if (input.id === "header-input") debounceSuggest(input.value);
+      });
+    });
+
+    var goBtn = $("#hero-go");
+    if (goBtn) goBtn.addEventListener("click", function () {
+      submitSearch($("#hero-input").value);
+    });
+
+    var hdrBtn = $("#header-go");
+    if (hdrBtn) hdrBtn.addEventListener("click", function () {
+      submitSearch($("#header-input").value);
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && fullscreen.on) fullscreen.reset();
+    });
+
+    document.addEventListener("click", function (e) {
+      var dd = $("#search-dd");
+      if (!dd) return;
+      if (!dd.contains(e.target) && !e.target.closest(".sk-header__search")) closeDropdown();
+    });
+  }
+
+  /* поиск с подсказкой в шапке */
+  var suggestTimer = null;
+  var suggestSeq = 0;
+
+  function debounceSuggest(v) {
+    clearTimeout(suggestTimer);
+    var q = String(v || "").trim();
+    if (!isNick(q)) {
+      closeDropdown();
+      return;
+    }
+    suggestTimer = setTimeout(function () { runSuggest(q); }, 420);
+  }
+
+  function runSuggest(q) {
+    var dd = $("#search-dd");
+    if (!dd) return;
+    var seq = ++suggestSeq;
+    dd.innerHTML =
+      '<div class="sk-dd__row" style="cursor:default"><span class="ton-skeleton" style="width:26px;height:26px;border-radius:6px"></span>' +
+      '<span class="ton-skeleton" style="height:12px;width:110px;margin:0"></span></div>';
+    dd.classList.add("sk-dd--open");
+
+    resolvePlayer(q)
+      .then(function (p) {
+        if (seq !== suggestSeq) return;
+        dd.innerHTML =
+          '<button class="sk-dd__row" data-name="' + esc(p.name) + '">' +
+          '<img alt="" src="' + avatarUrl(p.id, 52) + '">' +
+          "<span style='margin:0;color:inherit;font-size:14px;font-weight:600'>" + esc(p.name) + "</span>" +
+          "<span>открыть профиль</span></button>";
+        var b = $("button", dd);
+        guardImg($("img", dd), p.name, null, 26, 26);
+        b.addEventListener("click", function () {
+          haptic("light");
+          submitSearch(p.name);
+        });
+      })
+      .catch(function () {
+        if (seq !== suggestSeq) return;
+        dd.innerHTML =
+          '<div class="sk-dd__row" style="cursor:default;color:var(--ton-text-2)">' +
+          "<span>Игрок «" + esc(q) + "» не найден</span></div>";
+      });
+  }
+
+  function closeDropdown() {
+    var dd = $("#search-dd");
+    if (dd) {
+      dd.classList.remove("sk-dd--open");
+      suggestSeq++;
+    }
+  }
+
+  /* ---------------- Тема ---------------- */
+  function bindTheme() {
+    var btn = $("#btn-theme");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var dark = document.documentElement.dataset.theme === "dark";
+      applyTheme(!dark);
+      haptic("light");
+    });
+    var btnMobile = $("#btn-theme-mobile");
+    if (btnMobile) btnMobile.addEventListener("click", function () {
+      var dark = document.documentElement.dataset.theme === "dark";
+      applyTheme(!dark);
+      haptic("light");
+    });
+  }
+
+  /* ---------------- Старт ---------------- */
+  function boot() {
+    initTelegram();
+
+    if (tgReady) {
+      try {
+        TG.BackButton.onClick(function () {
+          haptic("light");
+          go("");
+        });
+      } catch (e) {}
+    }
+
+    renderTop();
+    renderSuggest();
+    bindSearch();
+    bindTheme();
+
+    var back = $("#btn-back");
+    if (back) back.addEventListener("click", function () {
+      haptic("light");
+      go("");
+    });
+
+    var back2 = $("#btn-back-2");
+    if (back2) back2.addEventListener("click", function () {
+      haptic("light");
+      go("");
+    });
+
+    var logo = $("#logo-link");
+    if (logo) logo.addEventListener("click", function (e) {
+      e.preventDefault();
+      go("");
+    });
+
+    var rnd = $("#btn-random");
+    if (rnd) rnd.addEventListener("click", function () {
+      var p = TOPSKINS[Math.floor(Math.random() * TOPSKINS.length)];
+      haptic("light");
+      go("u/" + p.name);
+    });
+
+    $$("[data-sort]").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        $$("[data-sort]").forEach(function (t) { t.setAttribute("aria-selected", "false"); });
+        tab.setAttribute("aria-selected", "true");
+        topFilter = tab.dataset.sort;
+        renderTop();
+        haptic("light");
+      });
+    });
+
+    window.addEventListener("resize", fitHeaderPlaceholder);
+    fitHeaderPlaceholder();
+
+    window.addEventListener("hashchange", onRoute);
+    onRoute();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58f60d03ccd51e0',t:'MTc5NDQyMTkzMQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58f60d03ccd51e0',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
